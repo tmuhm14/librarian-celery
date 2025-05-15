@@ -10,3 +10,9 @@ logger = get_task_logger(__name__)
 def add(x, y):
     logger.info(f'Adding {x} + {y}')
     return x + y
+
+
+@app.task
+def sync_to_phoneburner(pd_ref):
+    logger.info(f'Syncing to Phoneburner {pd_ref}')
+    return sync_to_phoneburner(pd_ref)
