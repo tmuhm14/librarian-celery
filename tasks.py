@@ -15,4 +15,5 @@ def add(x, y):
 @app.task
 def sync_to_phoneburner(pd_ref):
     logger.info(f'Syncing to Phoneburner {pd_ref}')
-    return sync_to_phoneburner(pd_ref)
+    sync_to_phoneburner(pd_ref)
+    return "Synced to Phoneburner"
