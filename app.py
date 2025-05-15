@@ -1,7 +1,6 @@
 import os
 from flask import Flask, flash, render_template, redirect, request, jsonify
 from tasks import add
-from data.repository import sync_to_phoneburner
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', "super-secret")
@@ -17,7 +16,6 @@ def api_sync_to_phoneburner():
     pd_ref = request.json.get('pd_ref')
     if not pd_ref:
         return jsonify({'error': 'Missing pd_ref'}), 400
-    sync_to_phoneburner.delay(pd_ref)
     return jsonify({'message': 'Syncing to Phoneburner'}), 200
 
 
