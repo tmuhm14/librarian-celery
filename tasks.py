@@ -1,7 +1,7 @@
 import os
 from celery import Celery
 from celery.utils.log import get_task_logger
-
+from services.sync_svc import sync_to_phoneburner_from_pipedrive
 app = Celery('tasks', broker=os.getenv("CELERY_BROKER_URL"))
 logger = get_task_logger(__name__)
 
@@ -15,5 +15,5 @@ def add(x, y):
 @app.task
 def sync_to_phoneburner(pd_ref):
     logger.info(f'Syncing to Phoneburner {pd_ref}')
-    sync_to_phoneburner(pd_ref)
+    sync_to_phoneburner_from_pipedrive(pd_ref)
     return "Synced to Phoneburner"

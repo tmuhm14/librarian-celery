@@ -14,7 +14,7 @@ owner_id = os.getenv("PIPEDRIVE_OWNER_ID")
 org_id = os.getenv("PHONEBURNER_ORG_ID")
 
 
-def sync_to_phoneburner(pd_ref):
+def sync_to_phoneburner_from_pipedrive(pd_ref):
     print(f"[DEBUG] Syncing to phoneburner for pd_ref: {pd_ref}")
     pipedrive_person = get_person(pd_ref)
 
