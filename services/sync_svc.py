@@ -10,8 +10,8 @@ import os
 from datetime import datetime, timedelta
 
 ddebug = 1
-owner_id = os.getenv("PIPEDRIVE_OWNER_ID")
-org_id = os.getenv("PHONEBURNER_ORG_ID")
+owner_id = 1167497775
+org_id = 66017789
 
 
 def sync_to_phoneburner_from_pipedrive(pd_ref):
