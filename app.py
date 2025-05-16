@@ -4,6 +4,18 @@ from tasks import add, sync_to_phoneburner
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', "super-secret")
+api_key = os.getenv(
+    'API_KEY', "wvMxNEJXK0GQ4Jnz7QhR2KUyg2hyxJAQwtqMuiHGnrCVG2Hs8H5pvHFSEz0Qeq7S")
+
+
+@app.before_request
+def before_request():
+    if request.path == '/':
+        return
+    api_key_param = request.args.get('apikey')
+    print(api_key_param)
+    if api_key_param != api_key:
+        return jsonify({'error': 'Unauthorized'}), 401
 
 
 @app.route('/')
@@ -25,5 +37,5 @@ def add_inputs():
     x = int(request.form['x'] or 0)
     y = int(request.form['y'] or 0)
     add.delay(x, y)
-    flash("Your addition job oijoijwfowfhas been submitted.")
+    flash("Your addition job has been submitted.")
     return redirect('/')
