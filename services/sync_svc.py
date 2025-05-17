@@ -1,5 +1,5 @@
 from services.phoneburner_svc import add_folders, get_all_contacts_after_update, get_all_phoneburner_folders, add_contact, update_contact, get_all_phoneburner_contacts, update_contact_custom_fields
-from services.pipedrive_svc import get_organization, get_person, get_all_pipedrive_organizations, get_all_pipedrive_contacts, get_latest_pipedrive_contacts_since_last_update
+from services.pipedrive_svc import get_organization, get_person, get_all_pipedrive_organizations, get_all_pipedrive_contacts
 from utils.constants import PIPEDRIVE_SOURCE_DETAIL_ID, sync_status, phone_type, status, stake_holder, campaign, score
 from data.repository import upsert_organization, get_organization_by_name, upsert_contact, get_contact_by_pd_ref, add_contact_sync_log, create_run_log, get_latest_run_log
 from models import Organization, Contact, ContactSyncLog, RunLogs
