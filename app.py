@@ -51,6 +51,7 @@ def main():
 def api_sync_to_phoneburner():
 
     request_data = request.json
+    print(f'[DEBUG] request_data: {request_data}')
     if not request_data:
 
         return jsonify({'error': 'Missing request data'}), 400
@@ -59,6 +60,7 @@ def api_sync_to_phoneburner():
 
         return jsonify({'error': 'Missing pd_ref'}), 400
 
+    print(f'[DEBUG] pd_ref: {pd_ref}')
     sync_to_phoneburner.delay(pd_ref)
 
     return jsonify({'message': 'Syncing to Phoneburner'}), 200
