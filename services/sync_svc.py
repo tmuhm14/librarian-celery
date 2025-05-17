@@ -47,8 +47,6 @@ def sync_to_phoneburner_from_pipedrive(pd_ref):
         print(f"[DEBUG] Pipedrive Person: {pipedrive_person}")
         if pipedrive_person[PIPEDRIVE_SOURCE_DETAIL_ID] in ["PPD", "RiseNow", "TitanX", "Triton"]:
 
-            print(
-                f"[DEBUG] Adding/updating Pipedrive Person: {pipedrive_person["first_name"]} {pipedrive_person["last_name"]}")
             record = map_person_to_phoneburner(pipedrive_person)
 
             print(f"[DEBUG] Mapped Record: {record}")
