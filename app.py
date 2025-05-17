@@ -3,7 +3,7 @@ from flask import Flask, flash, render_template, redirect, request, jsonify
 from tasks import add, sync_to_phoneburner
 import uuid
 from datetime import datetime
-from data.repository import create_request_log, request_log
+from data.repository import create_request_log, update_request_log
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', "super-secret")
@@ -52,19 +52,19 @@ def api_sync_to_phoneburner():
 
     request_data = request.json
     if not request_data:
-        request_log(request_id, request_type,
-                    request_data, 'error', request_time)
+        update_request_log(request_id, request_type,
+                           request_data, 'error', request_time)
         return jsonify({'error': 'Missing request data'}), 400
     pd_ref = request_data['data']['id']
     if not pd_ref:
-        request_log(request_id, request_type,
-                    request_data, 'error', request_time)
+        update_request_log(request_id, request_type,
+                           request_data, 'error', request_time)
         return jsonify({'error': 'Missing pd_ref'}), 400
 
     sync_to_phoneburner.delay(pd_ref)
 
-    request_log(request_id, request_type,
-                request_data, 'success', request_time)
+    update_request_log(request_id, request_type,
+                       request_data, 'success', request_time)
 
     return jsonify({'message': 'Syncing to Phoneburner'}), 200
 
