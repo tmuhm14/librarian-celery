@@ -55,16 +55,17 @@ def sync_to_phoneburner_from_pipedrive(pd_ref):
 
             print(response["contacts"]["contacts"]["user_id"])
             print(response["contacts"]["contacts"]["import_result"])
-            contact_sync_log = ContactSyncLog(
-                contact_id=db_contact.id,
-                sync_status=response["contacts"]["contacts"]["import_result"],
-                sync_type="pipedrive_to_phoneburner",
-                phoneburner_id=response["contacts"]["contacts"]["user_id"],
-                pipedrive_id=pipedrive_person["id"],
-                sync_time=datetime.now()
-            )
-            print(f"[DEBUG] Contact Sync Log: {contact_sync_log}")
-            add_contact_sync_log(contact_sync_log)
+            if db_contact:
+                contact_sync_log = ContactSyncLog(
+                    contact_id=db_contact.id,
+                    sync_status=response["contacts"]["contacts"]["import_result"],
+                    sync_type="pipedrive_to_phoneburner",
+                    phoneburner_id=response["contacts"]["contacts"]["user_id"],
+                    pipedrive_id=pipedrive_person["id"],
+                    sync_time=datetime.now()
+                )
+                print(f"[DEBUG] Contact Sync Log: {contact_sync_log}")
+                add_contact_sync_log(contact_sync_log)
 
             contact = get_contact_by_pd_ref(pd_ref)
             print(f"[DEBUG] Response Status: {response['status']}")
