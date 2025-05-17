@@ -14,15 +14,6 @@ owner_id = 1167497775
 org_id = 66017789
 
 
-def sync_latest_pipedrive_contacts():
-    run_log = get_latest_run_log()
-    if run_log:
-        last_update = run_log.run_start_time
-        contacts_list = get_latest_pipedrive_contacts(last_update)
-        for contact in contacts_list:
-            sync_to_phoneburner_from_pipedrive(contact["id"])
-
-
 def add_run_log(run_id, run_mode, run_start_time, run_end_time, run_status):
     run_log = RunLogs(
         run_id=run_id,
@@ -53,12 +44,17 @@ def sync_to_phoneburner_from_pipedrive(pd_ref):
         )
         upsert_contact(contact)
     if pipedrive_person:
-        if pipedrive_person[PIPEDRIVE_SOURCE_DETAIL_ID] == "PPD":
+        print(f"[DEBUG] Pipedrive Person: {pipedrive_person}")
+        if pipedrive_person[PIPEDRIVE_SOURCE_DETAIL_ID] in ["PPD", "RiseNow", "TitanX", "Triton"]:
+
+            print(
+                f"[DEBUG] Adding/updating Pipedrive Person: {pipedrive_person["first_name"]} {pipedrive_person["last_name"]}")
             record = map_person_to_phoneburner(pipedrive_person)
 
+            print(f"[DEBUG] Mapped Record: {record}")
             response = add_contact(record)
+            print(f"[DEBUG] Phoneburner Response: {response}")
 
-            print(f"[DEBUG] Response: {response}")
             print(response["contacts"]["contacts"]["user_id"])
             print(response["contacts"]["contacts"]["import_result"])
             contact_sync_log = ContactSyncLog(
