@@ -24,6 +24,12 @@ def update_run_log(run_id, run_status="completed"):
     session.commit()
 
 
+def get_latest_run_log():
+    run_log = session.query(RunLogs).order_by(
+        RunLogs.run_start_time.desc()).first()
+    return run_log
+
+
 def create_request_log(request_id, request_type, request_data, request_status="success", request_time=None):
     request_log = RequestLogs(request_id=request_id, request_type=request_type,
                               request_data=request_data, request_status=request_status, request_time=request_time)

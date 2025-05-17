@@ -1,0 +1,3 @@
+from services.sync_svc import sync_latest_pipedrive_contacts
+
+sync_latest_pipedrive_contacts()

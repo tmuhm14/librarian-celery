@@ -1,8 +1,8 @@
 from services.phoneburner_svc import add_folders, get_all_contacts_after_update, get_all_phoneburner_folders, add_contact, update_contact, get_all_phoneburner_contacts, update_contact_custom_fields
-from services.pipedrive_svc import get_organization, get_person, get_all_pipedrive_organizations, get_all_pipedrive_contacts
+from services.pipedrive_svc import get_organization, get_person, get_all_pipedrive_organizations, get_all_pipedrive_contacts, get_latest_pipedrive_contacts_since_last_update
 from utils.constants import PIPEDRIVE_SOURCE_DETAIL_ID, sync_status, phone_type, status, stake_holder, campaign, score
-from data.repository import upsert_organization, get_organization_by_name, upsert_contact, get_contact_by_pd_ref, add_contact_sync_log
-from models import Organization, Contact, ContactSyncLog
+from data.repository import upsert_organization, get_organization_by_name, upsert_contact, get_contact_by_pd_ref, add_contact_sync_log, create_run_log, get_latest_run_log
+from models import Organization, Contact, ContactSyncLog, RunLogs
 from utils.constants import PHONEBURNER_CUSTOM_JOB_PD_REF_ID
 import pprint
 import os
@@ -12,6 +12,26 @@ from datetime import datetime, timedelta
 ddebug = 1
 owner_id = 1167497775
 org_id = 66017789
+
+
+def sync_latest_pipedrive_contacts():
+    run_log = get_latest_run_log()
+    if run_log:
+        last_update = run_log.run_start_time
+        contacts_list = get_latest_pipedrive_contacts(last_update)
+        for contact in contacts_list:
+            sync_to_phoneburner_from_pipedrive(contact["id"])
+
+
+def add_run_log(run_id, run_mode, run_start_time, run_end_time, run_status):
+    run_log = RunLogs(
+        run_id=run_id,
+        run_mode=run_mode,
+        run_start_time=run_start_time,
+        run_end_time=run_end_time,
+        run_status=run_status
+    )
+    create_run_log(run_log)
 
 
 def sync_to_phoneburner_from_pipedrive(pd_ref):
@@ -89,134 +109,133 @@ def map_person_to_phoneburner(person):
     #     return None
 
     # This check condfirms that PPD is the Source Details
-    match person["dafb6c25356831f20d19e81c1cd7a7112d3f5dfd"]:
-        case "PPD":
-            # print(f"[CREATE] USER_ID: {people[person]["id"]} phoneburner format")
-            record["owner_id"] = owner_id
-            record["email"] = person["primary_email"]
-            record["first_name"] = person["first_name"]
-            record["last_name"] = person["last_name"]
+    if person["dafb6c25356831f20d19e81c1cd7a7112d3f5dfd"] in ["PPD", "RiseNow", "TitanX", "Triton"]:
+        # print(f"[CREATE] USER_ID: {people[person]["id"]} phoneburner format")
+        record["owner_id"] = owner_id
+        record["email"] = person["primary_email"]
+        record["first_name"] = person["first_name"]
+        record["last_name"] = person["last_name"]
 
-            # pprint.pp(people[person],indent=4)
-            # print("\n")
+        # pprint.pp(people[person],indent=4)
+        # print("\n")
 
-            bad_nums = [
-                "(403) 231-3900",
-                "(403) 205-8300",
-                "(832) 636-1009",
-            ]
+        bad_nums = [
+            "(403) 231-3900",
+            "(403) 205-8300",
+            "(832) 636-1009",
+        ]
 
-            for num in person["phone"]:
-                match num["primary"]:
-                    case True if (
-                        num["value"] != "true"
-                        and num["value"] != ""
-                        and num["value"] != "N/A"
-                        and num["value"] not in bad_nums
-                    ):
-                        # print(f'Primary {num["value"]}')
-                        record["phone"] = num["value"]
-                        record["phone_type"] = phone_type[num["label"]]
-                        record["phone_label"] = num["label"]
-                    case _ if (
-                        num["value"] != "true"
-                        and num["value"] != ""
-                        and num["value"] != "N/A"
-                        and num["value"] not in bad_nums
-                    ):
-                        # print(f'Secondary {num["value"]}')
-                        additional_phone.append(
-                            {
-                                "number": num["value"],
-                                "phone_type": phone_type[num["label"]],
-                                "phone_label": num["label"],
-                            }
-                        )
+        for num in person["phone"]:
+            match num["primary"]:
+                case True if (
+                    num["value"] != "true"
+                    and num["value"] != ""
+                    and num["value"] != "N/A"
+                    and num["value"] not in bad_nums
+                ):
+                    # print(f'Primary {num["value"]}')
+                    record["phone"] = num["value"]
+                    record["phone_type"] = phone_type[num["label"]]
+                    record["phone_label"] = num["label"]
+                case _ if (
+                    num["value"] != "true"
+                    and num["value"] != ""
+                    and num["value"] != "N/A"
+                    and num["value"] not in bad_nums
+                ):
+                    # print(f'Secondary {num["value"]}')
+                    additional_phone.append(
+                        {
+                            "number": num["value"],
+                            "phone_type": phone_type[num["label"]],
+                            "phone_label": num["label"],
+                        }
+                    )
 
-            record["additional_phone"] = additional_phone
-            record["city"] = person[
-                "f02fa455ab3b42fa7caf5f439f154c44ec0785cc"
-            ]
-            record["address1"] = person["postal_address"]
-            record["state"] = person[
-                "e92f3b7d08e6fbb0e7386df5cd23790239ee8f3f"
-            ]
+        record["additional_phone"] = additional_phone
+        record["city"] = person[
+            "f02fa455ab3b42fa7caf5f439f154c44ec0785cc"
+        ]
+        record["address1"] = person["postal_address"]
+        record["state"] = person[
+            "e92f3b7d08e6fbb0e7386df5cd23790239ee8f3f"
+        ]
 
+        custom_fields.append(
+            {
+                "custom_field_id": "888920",
+                "name": "LinkedIn URL",
+                "type": 1,
+                "value": person[
+                    "795c74fcbe59c8cb0972126a2d758b460addece6"
+                ],
+            }
+        )
+        custom_fields.append(
+            {
+                "custom_field_id": "888710",
+                "name": "Company Name",
+                "type": 1,
+                "value": person["org_name"],
+            }
+        )
+        if person["771702042524dcf97c2d4eb3ba8488e1b3db6978"]:
+            print(
+                f"[DEBUG] Stakeholder: {person['771702042524dcf97c2d4eb3ba8488e1b3db6978']}")
             custom_fields.append(
                 {
-                    "custom_field_id": "888920",
-                    "name": "LinkedIn URL",
+                    "custom_field_id": "888928",
+                    "name": "Stakeholder Type",
                     "type": 1,
-                    "value": person[
-                        "795c74fcbe59c8cb0972126a2d758b460addece6"
-                    ],
+                    "value": stake_holder.get(
+                        person[
+                            "771702042524dcf97c2d4eb3ba8488e1b3db6978"], f"Unexpected Stakeholder: {person['771702042524dcf97c2d4eb3ba8488e1b3db6978']}",
+                    ),
                 }
             )
+        if person["4a67abb3e361cde03b50511b1171cdabc1ce54a3"]:
+            print(
+                f"[DEBUG] Campaign: {person['4a67abb3e361cde03b50511b1171cdabc1ce54a3']}")
+            print(
+                f"[DEBUG] Campaign: {campaign.get(person['4a67abb3e361cde03b50511b1171cdabc1ce54a3'])}")
             custom_fields.append(
                 {
-                    "custom_field_id": "888710",
-                    "name": "Company Name",
+                    "custom_field_id": "888929",
+                    "name": "Campaign",
                     "type": 1,
-                    "value": person["org_name"],
-                }
-            )
-            if person["771702042524dcf97c2d4eb3ba8488e1b3db6978"]:
-                print(
-                    f"[DEBUG] Stakeholder: {person['771702042524dcf97c2d4eb3ba8488e1b3db6978']}")
-                custom_fields.append(
-                    {
-                        "custom_field_id": "888928",
-                        "name": "Stakeholder Type",
-                        "type": 1,
-                        "value": stake_holder.get(
-                            person[
-                                "771702042524dcf97c2d4eb3ba8488e1b3db6978"], f"Unexpected Stakeholder: {person['771702042524dcf97c2d4eb3ba8488e1b3db6978']}",
-                        ),
-                    }
-                )
-            if person["4a67abb3e361cde03b50511b1171cdabc1ce54a3"]:
-                print(
-                    f"[DEBUG] Campaign: {person['4a67abb3e361cde03b50511b1171cdabc1ce54a3']}")
-                print(
-                    f"[DEBUG] Campaign: {campaign.get(person['4a67abb3e361cde03b50511b1171cdabc1ce54a3'])}")
-                custom_fields.append(
-                    {
-                        "custom_field_id": "888929",
-                        "name": "Campaign",
-                        "type": 1,
-                        "value": campaign.get(
-                            person["4a67abb3e361cde03b50511b1171cdabc1ce54a3"], "",),
-                    }
-                )
-
-            custom_fields.append(
-                {
-                    "custom_field_id": "888931",
-                    "name": "Score",
-                    "type": 7,
-                    "value": score.get(
-                        person["be0137322e663cdca1a5ff7706c73d8e368b839c"], "0",),
-                }
-            )
-            custom_fields.append(
-                {
-                    "custom_field_id": "889001",
-                    "name": "Job Title",
-                    "type": 1,
-                    "value": person["job_title"],
-                }
-            )
-            custom_fields.append(
-                {
-                    "custom_field_id": "889967",
-                    "name": "pd_ref",
-                    "type": 7,
-                    "value": person["id"],
+                    "value": campaign.get(
+                        person["4a67abb3e361cde03b50511b1171cdabc1ce54a3"], "",),
                 }
             )
 
-            record["custom_fields"] = custom_fields
-            return record
+        custom_fields.append(
+            {
+                "custom_field_id": "888931",
+                "name": "Score",
+                "type": 7,
+                "value": score.get(
+                    person["be0137322e663cdca1a5ff7706c73d8e368b839c"], "0",),
+            }
+        )
+        custom_fields.append(
+            {
+                "custom_field_id": "889001",
+                "name": "Job Title",
+                "type": 1,
+                "value": person["job_title"],
+            }
+        )
+        custom_fields.append(
+            {
+                "custom_field_id": "889967",
+                "name": "pd_ref",
+                "type": 7,
+                "value": person["id"],
+            }
+        )
+
+        record["custom_fields"] = custom_fields
+        return record
     return None
 
 
@@ -610,3 +629,12 @@ def get_latest_updated_contact_refs():
         if field.get("name") == "pd_ref"
     ]
     return pd_ref_values
+
+
+def get_latest_pipedrive_contacts(last_update):
+    contacts_list = get_latest_pipedrive_contacts_since_last_update(
+        last_update)
+    return contacts_list
+
+
+sync_latest_pipedrive_contacts()
