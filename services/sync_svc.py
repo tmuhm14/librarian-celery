@@ -629,12 +629,3 @@ def get_latest_updated_contact_refs():
         if field.get("name") == "pd_ref"
     ]
     return pd_ref_values
-
-
-def get_latest_pipedrive_contacts(last_update):
-    contacts_list = get_latest_pipedrive_contacts_since_last_update(
-        last_update)
-    return contacts_list
-
-
-sync_latest_pipedrive_contacts()
