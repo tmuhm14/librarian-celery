@@ -224,8 +224,8 @@ def map_person_to_phoneburner(person):
             {
                 "custom_field_id": "938026",
                 "name": "Score Num",
-                        "type": 1,
-                        "value": "2"
+                "type": 1,
+                "value": "2"
             }
         )
         record["custom_fields"] = custom_fields
