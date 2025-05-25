@@ -98,11 +98,6 @@ def map_person_to_phoneburner(person):
                 f"USER_NAME: {person['first_name']} {person['last_name']} with USER_ID: {person['id']} update failed due to status of '{status[person['e70469ee79a29fdbfb41156db861a30375998171']]}'",)
             return None
 
-    # # Check if pd_ref exists in pd_refs_to_skip
-    # if person["id"] in pd_refs_to_skip:
-    #     print(f"[SKIP] USER_ID: {person['id']}")
-    #     return None
-
     # This check condfirms that PPD is the Source Details
     if person["dafb6c25356831f20d19e81c1cd7a7112d3f5dfd"] in ["PPD", "RiseNow", "TitanX", "Triton"]:
         # print(f"[CREATE] USER_ID: {people[person]["id"]} phoneburner format")
@@ -110,9 +105,6 @@ def map_person_to_phoneburner(person):
         record["email"] = person["primary_email"]
         record["first_name"] = person["first_name"]
         record["last_name"] = person["last_name"]
-
-        # pprint.pp(people[person],indent=4)
-        # print("\n")
 
         bad_nums = [
             "(403) 231-3900",
@@ -228,262 +220,17 @@ def map_person_to_phoneburner(person):
                 "value": person["id"],
             }
         )
-
+        custom_fields.append(
+            {
+                "custom_field_id": "938026",
+                "name": "Score Num",
+                        "type": 1,
+                        "value": "2"
+            }
+        )
         record["custom_fields"] = custom_fields
         return record
     return None
-
-
-def sync():
-    records = []
-    """Sync pipedrive to phoneburner"""
-
-    report_sync = {}
-    repeat_check = []
-    company_array = {}
-
-    # Get list of pd_refs for contacts updated in the last 24 hours
-    pd_refs_to_skip = get_latest_updated_contact_refs()
-
-    response_data = get_organization(0, 500)
-
-    print(f"[Report] Sync Date: {datetime.now()}")
-    print(f"[Report] Total Companys: {len(response_data)}")
-    report_sync["Sync Date"] = str(datetime.now())
-    report_sync["Total Companys"] = len(response_data)
-
-    for org in range(len(response_data)):
-
-        org = org + 18
-        print(f"[DEBUG] Org Number - {org}")
-
-        new_record = 0
-
-        # if org == 17:
-        #    quit()
-
-        company_id = response_data[org]["id"]
-        company_name = response_data[org]["name"]
-        company_status = response_data[org]["2705a7de12d92d72d4dae256167264bfc3d63477"]
-        report_sync[company_name] = {}
-        report_sync[company_name].update({"id": company_id})
-        report_sync[company_name].update({"name": company_name})
-        report_sync[company_name].update(
-            {"status": sync_status[company_status]})
-        report_sync[company_name].update(
-            {"people": response_data[org]["people_count"]})
-
-        # Check if Company Status == "Loaded"
-        # 281 = Loaded
-        # 282 = Synced
-        if company_status == "281":
-
-            ###################
-            # Company Section #
-            ###################
-            print(f"[Report] Company Name: {company_name}  id:[{company_id}]")
-            print(
-                f'[Report] Total People: {response_data[org]["people_count"]}')
-            print(
-                f"[Report] Status: {sync_status[company_status]}  id:[{company_status}]"
-            )
-
-            if ddebug == 1:
-                pprint.pp(response_data[org], indent=4)
-
-            # Check folders in Phone Burner update with Category_Id
-            category_id = check_pb_folders(company_name)
-
-            ###################
-            # People Section  #
-            ###################
-            people = get_people(company_id, 0, 500)
-
-            for person in range(len(people)):
-                record = {}
-                additional_phone = []
-                custom_fields = []
-
-                record.clear()
-                additional_phone.clear()
-                custom_fields.clear()
-
-                record["category_id"] = category_id
-
-                # This check confirms status
-                match people[person]["e70469ee79a29fdbfb41156db861a30375998171"]:
-                    case "268" | "241" | "242" | "243" | "251":
-                        print(
-                            f"USER_NAME: {people[person]['first_name']} {people[person]['last_name']} with USER_ID: {people[person]['id']} update failed due to status of '{status[people[person]['e70469ee79a29fdbfb41156db861a30375998171']]}'",
-
-                        )
-                        continue
-
-                # Check if pd_ref exists in pd_refs_to_skip
-                if people[person]["id"] in pd_refs_to_skip:
-                    print(f"[SKIP] USER_ID: {people[person]['id']}")
-                    continue
-
-                # This check condfirms that PPD is the Source Details
-                match people[person]["dafb6c25356831f20d19e81c1cd7a7112d3f5dfd"]:
-                    case "PPD":
-                        new_record = new_record + 1
-                        # print(f"[CREATE] USER_ID: {people[person]["id"]} phoneburner format")
-                        record["owner_id"] = owner_id
-                        record["email"] = people[person]["primary_email"]
-                        record["first_name"] = people[person]["first_name"]
-                        record["last_name"] = people[person]["last_name"]
-
-                        # pprint.pp(people[person],indent=4)
-                        # print("\n")
-
-                        bad_nums = [
-                            "(403) 231-3900",
-                            "(403) 205-8300",
-                            "(832) 636-1009",
-                        ]
-
-                        for num in people[person]["phone"]:
-                            match num["primary"]:
-                                case True if (
-                                    num["value"] != "true"
-                                    and num["value"] != ""
-                                    and num["value"] != "N/A"
-                                    and num["value"] not in bad_nums
-                                ):
-                                    # print(f'Primary {num["value"]}')
-                                    record["phone"] = num["value"]
-                                    record["phone_type"] = phone_type[num["label"]]
-                                    record["phone_label"] = num["label"]
-                                case _ if (
-                                    num["value"] != "true"
-                                    and num["value"] != ""
-                                    and num["value"] != "N/A"
-                                    and num["value"] not in bad_nums
-                                ):
-                                    # print(f'Secondary {num["value"]}')
-                                    additional_phone.append(
-                                        {
-                                            "number": num["value"],
-                                            "phone_type": phone_type[num["label"]],
-                                            "phone_label": num["label"],
-                                        }
-                                    )
-
-                        record["additional_phone"] = additional_phone
-                        record["city"] = people[person][
-                            "f02fa455ab3b42fa7caf5f439f154c44ec0785cc"
-                        ]
-                        record["address1"] = people[person]["postal_address"]
-                        record["state"] = people[person][
-                            "e92f3b7d08e6fbb0e7386df5cd23790239ee8f3f"
-                        ]
-
-                        custom_fields.append(
-                            {
-                                "custom_field_id": "888920",
-                                "name": "LinkedIn URL",
-                                "type": 1,
-                                "value": people[person][
-                                    "795c74fcbe59c8cb0972126a2d758b460addece6"
-                                ],
-                            }
-                        )
-                        custom_fields.append(
-                            {
-                                "custom_field_id": "888710",
-                                "name": "Company Name",
-                                "type": 1,
-                                "value": people[person]["org_name"],
-                            }
-                        )
-                        if people[person]["771702042524dcf97c2d4eb3ba8488e1b3db6978"]:
-                            custom_fields.append(
-                                {
-                                    "custom_field_id": "888928",
-                                    "name": "Stakeholder Type",
-                                    "type": 1,
-                                    "value": stake_holder.get(
-                                        people[person][
-                                            "771702042524dcf97c2d4eb3ba8488e1b3db6978"], f"Unexpected Stakeholder: {people[person]['771702042524dcf97c2d4eb3ba8488e1b3db6978']}",
-                                    ),
-                                }
-                            )
-                        if people[person]["4a67abb3e361cde03b50511b1171cdabc1ce54a3"]:
-                            custom_fields.append(
-                                {
-                                    "custom_field_id": "888929",
-                                    "name": "Campaign",
-                                    "type": 1,
-                                    "value": campaign.get(
-                                        people[person]["4a67abb3e361cde03b50511b1171cdabc1ce54a3"], f"Unexpected Campaign: {people[person]['4a67abb3e361cde03b50511b1171cdabc1ce54a3']}",),
-                                }
-                            )
-                        if people[person]["be0137322e663cdca1a5ff7706c73d8e368b839c"]:
-                            custom_fields.append(
-                                {
-                                    "custom_field_id": "888931",
-                                    "name": "Score",
-                                    "type": 7,
-                                    "value": score.get(
-                                        people[person]["be0137322e663cdca1a5ff7706c73d8e368b839c"], f"Unexpected Score: {people[person]['be0137322e663cdca1a5ff7706c73d8e368b839c']}",),
-                                }
-                            )
-                        custom_fields.append(
-                            {
-                                "custom_field_id": "889001",
-                                "name": "Job Title",
-                                "type": 1,
-                                "value": people[person]["job_title"],
-                            }
-                        )
-                        custom_fields.append(
-                            {
-                                "custom_field_id": "889967",
-                                "name": "pd_ref",
-                                "type": 7,
-                                "value": people[person]["id"],
-                            }
-                        )
-
-                        record["custom_fields"] = custom_fields
-
-                        print(record)
-                        # Add new record
-
-                        # if ddebug == 1:
-                        #     pprint.pp(record, indent=4)
-                        # #test = api_phoneburner.add_contact(record)
-                        # if ddebug == 1:
-                        #     print("\n")
-                        #     print("RESPONSE")
-                        #     pprint.pp(test, indent=4)
-                        # if test is None:
-                        #     typer.secho(
-                        #         f"{person} USER_NAME: {people[person]['first_name']} {people[person]['last_name']} update failed - test is None",
-                        #         fg=typer.colors.RED,
-                        #     )
-                        # elif test["contacts"]["contacts"]["user_id"] in repeat_check:
-                        #     typer.secho(
-                        #         f"{person} USER_NAME: {people[person]['first_name']} {people[person]['last_name']} with USER_ID: {test['contacts']['contacts']['user_id']} update failed",
-                        #         fg=typer.colors.RED,
-                        #     )
-                        # else:
-                        #     repeat_check.append(test["contacts"]["contacts"]["user_id"])
-                        #     print(
-                        #         f"{person} [API] USER_NAME: {people[person]['first_name']} {people[person]['last_name']} with USER_ID: {people[person]['id']} Added to phoneburner as {test['contacts']['contacts']['user_id']}"
-                        #     )
-
-                    case _:
-                        pass
-
-        print(
-            f"[Report] {new_record} People have been updated in {company_name}\n")
-        report_sync[company_name].update(
-            {"report": f"{new_record} People have been updated in {company_name}"}
-        )
-
-        pprint.pp(report_sync, indent=4)
 
 
 def sync_pipedrive_organizations():
