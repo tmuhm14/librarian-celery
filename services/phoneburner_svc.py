@@ -150,19 +150,19 @@ def add_contact(record):
 
 
 def update_custom_field(contact_id, custom_field_id, value):
-    url = f'http://www.phoneburner.com/rest/1/contacts/{contact_id}/customfields/{custom_field_id}'
-    payload = {"value": "e"}
+    url = f'https://www.phoneburner.com/rest/1/contacts/{contact_id}/customfields/{custom_field_id}'
+    payload = {"value": value}
     headers = {
         'Authorization': 'Bearer ' + api_token,
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'application/json'
     }
-    response = requests.request("POST", url, headers=headers, data=payload)
+    response = requests.request("PUT", url, headers=headers, data=payload)
     print(response.json())
     return response.json()
 
 
 def get_custom_field(contact_id, custom_field_id):
-    url = f'http://www.phoneburner.com/rest/1/contacts/{contact_id}/customfields/{custom_field_id}'
+    url = f'https://www.phoneburner.com/rest/1/contacts/{contact_id}/customfields/{custom_field_id}'
     headers = {
         'Authorization': 'Bearer ' + api_token,
         'Content-Type': 'application/json'

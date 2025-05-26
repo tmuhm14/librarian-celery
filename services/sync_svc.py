@@ -220,14 +220,7 @@ def map_person_to_phoneburner(person):
                 "value": person["id"],
             }
         )
-        custom_fields.append(
-            {
-                "custom_field_id": "938026",
-                "name": "Score Num",
-                "type": 1,
-                "value": "4"
-            }
-        )
+
         record["custom_fields"] = custom_fields
         return record
     return None
