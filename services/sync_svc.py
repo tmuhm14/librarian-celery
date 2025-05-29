@@ -62,6 +62,10 @@ def sync_to_phoneburner_from_pipedrive(pd_ref):
                     sync_type="pipedrive_to_phoneburner",
                     phoneburner_id=response["contacts"]["contacts"]["user_id"],
                     pipedrive_id=pipedrive_person["id"],
+                    first_name=pipedrive_person["first_name"],
+                    last_name=pipedrive_person["last_name"],
+                    folder_id=db_contact.folder_id,
+                    folder_name=db_contact.folder_name,
                     sync_time=datetime.now()
                 )
                 print(f"[DEBUG] Contact Sync Log: {contact_sync_log}")
@@ -266,20 +270,6 @@ def sync_phoneburner_organizations():
                     # return new_pb_folder["folders"]["0"]["id"]
         except Exception:
             pass
-
-    # for pb_org in pb_orgs["folders"]:
-    #     org = get_organization_by_name(pb_org["folder_name"])
-    #     print(org)
-    #     if org:
-    #         org.pb_ref = pb_org["folder_id"]
-    #         upsert_organization(org)
-    #     else:
-    #         print(f"[CREATE] Create Folder in phoneburner")
-    #         company = {}
-    #         company["name"] = pb_org["folder_name"]
-    #         company["parent_id"] = org_id
-
-    print(pb_orgs)
 
 
 def sync_pipedrive_contacts():

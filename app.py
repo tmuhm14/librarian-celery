@@ -4,6 +4,8 @@ from tasks import add, sync_to_phoneburner
 import uuid
 from datetime import datetime
 from data.repository import create_request_log, update_request_log
+import csv
+from pathlib import Path
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', "super-secret")
@@ -73,3 +75,23 @@ def add_inputs():
     add.delay(x, y)
     flash("Your addition job has been submitted.")
     return redirect('/')
+
+
+@app.route('/sync-logs')
+def sync_logs():
+    logs = []
+    log_file = Path('run_log.csv')
+
+    if log_file.exists():
+        with open(log_file, 'r') as f:
+            csv_reader = csv.reader(f)
+            for row in csv_reader:
+                if len(row) >= 4:  # Ensure row has all required fields
+                    logs.append({
+                        'user_id': row[0],
+                        'custom_score': row[1],
+                        'pd_ref': row[2],
+                        'status': row[3]
+                    })
+
+    return render_template('sync_logs.html', logs=logs)

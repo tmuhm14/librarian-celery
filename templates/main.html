@@ -2,33 +2,63 @@
 <head>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
           integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <style>
+        .card {
+            margin-bottom: 1.5rem;
+        }
+        .stats-card {
+            background-color: #f8f9fa;
+        }
+    </style>
 </head>
 <body>
 <div class="container m-3">
-    <div class="row align-items-center justify-content-center">
-        <div class="col">
-            <h1 class="mb-5">Asynchronous addition using Celery!</h1>
-						<div class="row my-3">
-								{% with messages = get_flashed_messages() %}
-								{% if messages %}
-								{% for message in messages %}
-								<div class="alert alert-info">{{ message }}</div>
-								{% endfor %}
-								{% endif %}
-								{% endwith %}
-						</div>
-            <form action="/add" method="POST" class="form-inline">
-                <div class="form-group">
-                    <label for="x">X</label>
-                    <input id="x" class="form-control mx-3" type="number" name="x"/>
-                </div>
-                <div class="form-group mx-3">
-                    <label for="y">Y</label>
-                    <input id="y" class="form-control mx-3" type="number" name="y"/>
-                </div>
-                <button class="btn btn-primary" type="submit">Add X and Y</button>
-            </form>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+        <a class="navbar-brand" href="/">Librarian</a>
+        <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/sync-logs">Sync Logs</a>
         </div>
+    </nav>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title mb-4">PhoneBurner Contact Sync</h1>
+                    <p class="card-text">
+                        This application manages the synchronization of contacts between your system and PhoneBurner.
+                        Use the navigation menu to view sync logs and monitor the status of your contact synchronization.
+                    </p>
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">Quick Links</h5>
+                        <ul class="mb-0">
+                            <li>View <a href="/sync-logs" class="alert-link">Sync Logs</a> to monitor contact synchronization status</li>
+                            <li>Use the API endpoint <code>/api/v1/phoneburner/sync</code> to trigger new syncs</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <h5 class="card-title">API Information</h5>
+                    <p class="card-text">
+                        <strong>Endpoint:</strong> <code>/api/v1/phoneburner/sync</code><br>
+                        <strong>Method:</strong> POST<br>
+                        <strong>Authentication:</strong> API Key required
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row my-3">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
     </div>
 </div>
 </body>
