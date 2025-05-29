@@ -122,6 +122,6 @@ def add_contact_sync_log(contact_sync_log):
 
 
 def get_contact_sync_log():
-    contact_sync_log = session.query(ContactSyncLog).all().order_by(
-        ContactSyncLog.sync_time.desc())
+    contact_sync_log = session.query(ContactSyncLog).order_by(
+        ContactSyncLog.sync_time.desc()).all()
     return contact_sync_log
