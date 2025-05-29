@@ -85,7 +85,7 @@ def sync_logs():
     for log in sync_logs:
         logs.append({
             "time": log.sync_time.strftime("%Y-%m-%d %H:%M:%S"),
-            "type": log.type,
+            "type": log.sync_type,
             "contact_id": log.contact_id,
             "pipedrive_id": log.pipedrive_id,
             "phoneburner_id": log.phoneburner_id,
