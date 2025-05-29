@@ -51,26 +51,21 @@ def main():
 
 @app.route('/api/v1/phoneburner/sync', methods=['POST'])
 def api_sync_to_phoneburner():
+
     request_data = request.json
     print(f'[DEBUG] request_data: {request_data}')
     if not request_data:
-        return jsonify({'error': 'Missing request data'}), 400
 
+        return jsonify({'error': 'Missing request data'}), 400
     pd_ref = request_data['data']['id']
     if not pd_ref:
+
         return jsonify({'error': 'Missing pd_ref'}), 400
 
     print(f'[DEBUG] pd_ref: {pd_ref}')
+    sync_to_phoneburner.delay(pd_ref)
 
-    if pd_ref == 'all':
-        # Trigger a full sync
-        contacts = pull_phoneburner_contacts()
-        read_phoneburner_contacts(contacts)
-        return jsonify({'message': 'Full sync process started'}), 200
-    else:
-        # Single contact sync
-        sync_to_phoneburner.delay(pd_ref)
-        return jsonify({'message': 'Syncing to Phoneburner'}), 200
+    return jsonify({'message': 'Syncing to Phoneburner'}), 200
 
 
 @app.route('/add', methods=['POST'])
@@ -84,19 +79,18 @@ def add_inputs():
 
 @app.route('/sync-logs')
 def sync_logs():
+    sync_logs = get_contact_sync_log()
+
     logs = []
-    log_file = Path('run_log.csv')
+    for log in sync_logs:
+        logs.append({
+            "time": log.sync_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "type": log.type,
+            "contact_id": log.contact_id,
+            "pipedrive_id": log.pipedrive_id,
+            "phoneburner_id": log.phoneburner_id,
+            "name": log.first_name + " " + log.last_name,
+            "company": log.folder_name,
 
-    if log_file.exists():
-        with open(log_file, 'r') as f:
-            csv_reader = csv.reader(f)
-            for row in csv_reader:
-                if len(row) >= 4:  # Ensure row has all required fields
-                    logs.append({
-                        'user_id': row[0],
-                        'custom_score': row[1],
-                        'pd_ref': row[2],
-                        'status': row[3]
-                    })
-
-    return render_template('sync_logs.html', logs=logs, now=datetime.now())
+        })
+    return render_template('sync_logs.html', logs=logs)

@@ -15,14 +15,6 @@
         .table-header {
             background-color: #f8f9fa;
         }
-        .status-found {
-            color: #198754;
-            font-weight: 500;
-        }
-        .status-not-found {
-            color: #dc3545;
-            font-weight: 500;
-        }
         .card {
             margin-bottom: 1.5rem;
         }
@@ -31,19 +23,6 @@
         }
         .dataTables_wrapper {
             padding: 1rem 0;
-        }
-        .status-badge {
-            padding: 0.35em 0.65em;
-            border-radius: 0.25rem;
-            font-size: 0.875em;
-        }
-        .status-found-badge {
-            background-color: #d1e7dd;
-            color: #0f5132;
-        }
-        .status-not-found-badge {
-            background-color: #f8d7da;
-            color: #842029;
         }
         .action-buttons {
             margin-bottom: 1rem;
@@ -55,6 +34,12 @@
         .dt-buttons {
             margin-bottom: 1rem;
         }
+        .sync-type {
+            font-weight: 500;
+        }
+        .sync-type.create { color: #198754; }
+        .sync-type.update { color: #0d6efd; }
+        .sync-type.delete { color: #dc3545; }
     </style>
 </head>
 <body>
@@ -81,32 +66,35 @@
                                 <button id="refreshBtn" class="btn btn-outline-primary me-2">
                                     <i class="bi bi-arrow-clockwise"></i> Refresh
                                 </button>
-                                <span class="last-updated">
-                                    Last updated: <span id="lastUpdated">{{ now.strftime('%Y-%m-%d %H:%M:%S') }}</span>
-                                </span>
                             </div>
                         </div>
                         <div class="table-responsive">
                             <table id="syncLogsTable" class="table table-striped table-hover">
                                 <thead class="table-header">
                                     <tr>
-                                        <th>User ID</th>
-                                        <th>Custom Score</th>
-                                        <th>PD Reference</th>
-                                        <th>Status</th>
+                                        <th>Time</th>
+                                        <th>Type</th>
+                                        <th>Name</th>
+                                        <th>Company</th>
+                                        <th>Contact ID</th>
+                                        <th>Pipedrive ID</th>
+                                        <th>PhoneBurner ID</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for log in logs %}
                                     <tr>
-                                        <td>{{ log.user_id }}</td>
-                                        <td>{{ log.custom_score }}</td>
-                                        <td>{{ log.pd_ref }}</td>
+                                        <td>{{ log.time }}</td>
                                         <td>
-                                            <span class="status-badge {% if log.status == 'Found' %}status-found-badge{% else %}status-not-found-badge{% endif %}">
-                                                {{ log.status }}
+                                            <span class="sync-type {{ log.type.lower() }}">
+                                                {{ log.type }}
                                             </span>
                                         </td>
+                                        <td>{{ log.name }}</td>
+                                        <td>{{ log.company }}</td>
+                                        <td>{{ log.contact_id }}</td>
+                                        <td>{{ log.pipedrive_id }}</td>
+                                        <td>{{ log.phoneburner_id }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -124,8 +112,9 @@
                         <h5 class="card-title">Sync Statistics</h5>
                         <p class="card-text">
                             <strong>Total Records:</strong> <span id="totalRecords">0</span><br>
-                            <strong>Found:</strong> <span id="foundCount" class="status-found">0</span><br>
-                            <strong>Not Found:</strong> <span id="notFoundCount" class="status-not-found">0</span>
+                            <strong>Created:</strong> <span id="createdCount" class="sync-type create">0</span><br>
+                            <strong>Updated:</strong> <span id="updatedCount" class="sync-type update">0</span><br>
+                            <strong>Deleted:</strong> <span id="deletedCount" class="sync-type delete">0</span>
                         </p>
                     </div>
                 </div>
@@ -162,7 +151,7 @@
                         text: '<i class="bi bi-file-earmark-excel"></i> Excel',
                         className: 'btn btn-success me-2',
                         exportOptions: {
-                            columns: [0, 1, 2, 3]
+                            columns: [0, 1, 2, 3, 4, 5, 6]
                         }
                     },
                     {
@@ -170,7 +159,7 @@
                         text: '<i class="bi bi-file-earmark-text"></i> CSV',
                         className: 'btn btn-info me-2',
                         exportOptions: {
-                            columns: [0, 1, 2, 3]
+                            columns: [0, 1, 2, 3, 4, 5, 6]
                         }
                     },
                     {
@@ -178,7 +167,7 @@
                         text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
                         className: 'btn btn-danger',
                         exportOptions: {
-                            columns: [0, 1, 2, 3]
+                            columns: [0, 1, 2, 3, 4, 5, 6]
                         }
                     }
                 ]
@@ -187,14 +176,20 @@
             // Update statistics
             function updateStats() {
                 const total = table.rows().count();
-                const found = table.rows().nodes().to$().filter(function() {
-                    return $(this).find('.status-found-badge').length > 0;
+                const created = table.rows().nodes().to$().filter(function() {
+                    return $(this).find('.sync-type.create').length > 0;
                 }).length;
-                const notFound = total - found;
+                const updated = table.rows().nodes().to$().filter(function() {
+                    return $(this).find('.sync-type.update').length > 0;
+                }).length;
+                const deleted = table.rows().nodes().to$().filter(function() {
+                    return $(this).find('.sync-type.delete').length > 0;
+                }).length;
 
                 $('#totalRecords').text(total);
-                $('#foundCount').text(found);
-                $('#notFoundCount').text(notFound);
+                $('#createdCount').text(created);
+                $('#updatedCount').text(updated);
+                $('#deletedCount').text(deleted);
             }
 
             // Initial stats update
@@ -209,7 +204,7 @@
                 btn.prop('disabled', true);
                 btn.html('<i class="bi bi-arrow-clockwise"></i> Refreshing...');
                 
-                // Simulate refresh (replace with actual refresh logic)
+                // Reload the page
                 setTimeout(function() {
                     location.reload();
                 }, 500);
