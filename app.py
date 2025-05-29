@@ -3,7 +3,7 @@ from flask import Flask, flash, render_template, redirect, request, jsonify
 from tasks import add, sync_to_phoneburner
 import uuid
 from datetime import datetime
-from data.repository import create_request_log, update_request_log
+from data.repository import create_request_log, update_request_log, get_contact_sync_log
 import csv
 from pathlib import Path
 
@@ -36,9 +36,9 @@ def before_request():
     create_request_log(request_id, request_type,
                        request_data, request_status, request_time)
 
-    if request.path == '/':
-        return
-    api_key_param = request.args.get('apikey')
+    # if request.path == '/':
+    #     return
+    api_key_param = request.args.get('apikey') or request.args.get('id_key')
     print(api_key_param)
     if api_key_param != api_key:
         return jsonify({'error': 'Unauthorized'}), 401
@@ -51,21 +51,26 @@ def main():
 
 @app.route('/api/v1/phoneburner/sync', methods=['POST'])
 def api_sync_to_phoneburner():
-
     request_data = request.json
     print(f'[DEBUG] request_data: {request_data}')
     if not request_data:
-
         return jsonify({'error': 'Missing request data'}), 400
+
     pd_ref = request_data['data']['id']
     if not pd_ref:
-
         return jsonify({'error': 'Missing pd_ref'}), 400
 
     print(f'[DEBUG] pd_ref: {pd_ref}')
-    sync_to_phoneburner.delay(pd_ref)
 
-    return jsonify({'message': 'Syncing to Phoneburner'}), 200
+    if pd_ref == 'all':
+        # Trigger a full sync
+        contacts = pull_phoneburner_contacts()
+        read_phoneburner_contacts(contacts)
+        return jsonify({'message': 'Full sync process started'}), 200
+    else:
+        # Single contact sync
+        sync_to_phoneburner.delay(pd_ref)
+        return jsonify({'message': 'Syncing to Phoneburner'}), 200
 
 
 @app.route('/add', methods=['POST'])
@@ -94,4 +99,4 @@ def sync_logs():
                         'status': row[3]
                     })
 
-    return render_template('sync_logs.html', logs=logs)
+    return render_template('sync_logs.html', logs=logs, now=datetime.now())
