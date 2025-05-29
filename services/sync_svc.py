@@ -64,8 +64,7 @@ def sync_to_phoneburner_from_pipedrive(pd_ref):
                     pipedrive_id=pipedrive_person["id"],
                     first_name=pipedrive_person["first_name"],
                     last_name=pipedrive_person["last_name"],
-                    folder_id=db_contact.folder_id,
-                    folder_name=db_contact.folder_name,
+                    folder_name=pipedrive_person["org_name"],
                     sync_time=datetime.now()
                 )
                 print(f"[DEBUG] Contact Sync Log: {contact_sync_log}")
