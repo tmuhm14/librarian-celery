@@ -112,7 +112,13 @@ def callback():
 @app.route('/api/v1/pipedrive/sync/companies', methods=['GET'])
 def sync_companies():
     print(f'[DEBUG] request: {request}')
-    p
+    headers = request.headers
+    print(f'[DEBUG] headers: {headers}')
+    access_token = headers.get('Authorization')
+    print(f'[DEBUG] access_token: {access_token}')
+    refresh_token = headers.get('Refresh-Token')
+    print(f'[DEBUG] refresh_token: {refresh_token}')
+
     print('Syncing companies')
     return jsonify({'message': 'Syncing companies'}), 200
 
