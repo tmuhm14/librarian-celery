@@ -82,13 +82,14 @@ def add_inputs():
 @app.route('/api/v1/pipedrive/callback', methods=['GET'])
 def callback():
     auth_code = request.args.get('code')
+    print(f'[DEBUG] Callback: {auth_code}')
     if not auth_code:
         return jsonify({'error': 'Missing auth code'}), 400
 
-    client_id = os.getenv('PIPEDRIVE_CLIENT_ID') or 'f767bda5e600a23c'
-    client_secret = os.getenv(
-        'PIPEDRIVE_CLIENT_SECRET') or '10de0ed24692d47dab9de016c7cd6ffaeb331c65'
+    client_id = 'f767bda5e600a23c'
+    client_secret = '10de0ed24692d47dab9de016c7cd6ffaeb331c65'
     url = f"https://oauth.pipedrive.com/oauth/token"
+
     headers = {'Authorization': f'Basic {client_id}:{client_secret}'}
     data = {
         'grant_type': 'authorization_code',
@@ -96,6 +97,7 @@ def callback():
         'code': auth_code
     }
     response = requests.post(url, headers=headers, data=data)
+
     print(f'[DEBUG] Callback: {response.json()}')
     return jsonify({'message': 'Callback received'}), 200
 
