@@ -1,6 +1,6 @@
 import os
 from flask import Flask, flash, render_template, redirect, request, jsonify
-from tasks import add, sync_to_phoneburner
+# from tasks import add, sync_to_phoneburner
 import uuid
 from datetime import datetime
 from data.repository import create_request_log, update_request_log, get_contact_sync_log
@@ -38,7 +38,7 @@ def before_request():
     create_request_log(request_id, request_type,
                        request_data, request_status, request_time)
 
-    if request.path == '/api/v1/pipedrive/callback':
+    if request.path == '/api/v1/pipedrive/callback' or request.path == '/api/v1/pipedrive/sync/companies':
         return
     api_key_param = request.args.get('apikey') or request.args.get('id_key')
     print(api_key_param)
@@ -65,18 +65,9 @@ def api_sync_to_phoneburner():
         return jsonify({'error': 'Missing pd_ref'}), 400
 
     print(f'[DEBUG] pd_ref: {pd_ref}')
-    sync_to_phoneburner.delay(pd_ref)
+    # sync_to_phoneburner.delay(pd_ref)
 
     return jsonify({'message': 'Syncing to Phoneburner'}), 200
-
-
-@app.route('/add', methods=['POST'])
-def add_inputs():
-    x = int(request.form['x'] or 0)
-    y = int(request.form['y'] or 0)
-    # add.delay(x, y)
-    flash("Your addition job has been submitted.")
-    return redirect('/')
 
 
 @app.route('/api/v1/pipedrive/callback', methods=['GET'])
@@ -91,22 +82,37 @@ def callback():
     client_secret = '10de0ed24692d47dab9de016c7cd6ffaeb331c65'
     url = f"https://oauth.pipedrive.com/oauth/token"
 
-    auth_string = str(base64.b64encode(b'client_id:client_secret'))
-    headers = {'Authorization': f'Basic {auth_string}'}
+    encoded_credentials = base64.b64encode(
+        (f'{client_id}:{client_secret}').encode('utf-8')).decode()
+    print(f'[DEBUG] encoded_credentials: {encoded_credentials}')
+    headers = {
+        'Authorization': f'Basic {encoded_credentials}',
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
     data = {
         'grant_type': 'authorization_code',
         'redirect_uri': 'https://app-1oya.onrender.com/api/v1/pipedrive/callback',
         'code': auth_code
     }
+
+    print(f'[DEBUG] headers: {headers}')
+    print(f'[DEBUG] data: {data}')
     response = requests.post(url, headers=headers, data=data)
 
-    print(f'[DEBUG] Callback: {response.json()}')
-    return jsonify({'message': 'Callback received'}), 200
+    print(f'[DEBUG] response: {response.json()}')
+    response_data = response.json()
+    access_token = response_data['access_token']
+    refresh_token = response_data['refresh_token']
+    redirect_uri = response_data['api_domain']
+
+    # redirect to the redirect_uri with the access_token and refresh_token
+    return redirect(f"{redirect_uri}/?access_token={access_token}&refresh_token={refresh_token}")
 
 
 @app.route('/api/v1/pipedrive/sync/companies', methods=['GET'])
 def sync_companies():
-    print(request.args)
+    print(f'[DEBUG] request: {request}')
+    p
     print('Syncing companies')
     return jsonify({'message': 'Syncing companies'}), 200
 
