@@ -1,6 +1,6 @@
 import os
 from flask import Flask, flash, render_template, redirect, request, jsonify
-# from tasks import add, sync_to_phoneburner
+from tasks import add, sync_to_phoneburner
 import uuid
 from datetime import datetime
 from data.repository import create_request_log, update_request_log, get_contact_sync_log
@@ -65,7 +65,7 @@ def api_sync_to_phoneburner():
         return jsonify({'error': 'Missing pd_ref'}), 400
 
     print(f'[DEBUG] pd_ref: {pd_ref}')
-    # sync_to_phoneburner.delay(pd_ref)
+    sync_to_phoneburner.delay(pd_ref)
 
     return jsonify({'message': 'Syncing to Phoneburner'}), 200
 
@@ -148,12 +148,3 @@ def sync_org():
     org_name = request.args.get('org_name', '')
 
     return render_template('sync_org.html', org_id="test", org_name="org_name")
-
-
-@app.route('/sync-iframe')
-def sync_iframe():
-    # Get organization info from request parameters
-    org_id = request.args.get('org_id', '')
-    org_name = request.args.get('org_name', '')
-
-    return render_template('sync_iframe.html', org_id=org_id, org_name=org_name)
