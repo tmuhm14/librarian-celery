@@ -7,6 +7,7 @@ from data.repository import create_request_log, update_request_log, get_contact_
 import csv
 from pathlib import Path
 
+
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', "super-secret")
 api_key = os.getenv(
@@ -72,15 +73,22 @@ def api_sync_to_phoneburner():
 def add_inputs():
     x = int(request.form['x'] or 0)
     y = int(request.form['y'] or 0)
-    add.delay(x, y)
+    # add.delay(x, y)
     flash("Your addition job has been submitted.")
     return redirect('/')
 
 
-@app.route('/api/v1/pipedrive/callback', methods=['POST'])
+@app.route('/api/v1/pipedrive/callback', methods=['GET'])
 def callback():
     print(f'[DEBUG] Callback: {request.json}')
     return jsonify({'message': 'Callback received'}), 200
+
+
+@app.route('/api/v1/pipedrive/sync/companies', methods=['GET'])
+def sync_companies():
+    print(request.args)
+    print('Syncing companies')
+    return jsonify({'message': 'Syncing companies'}), 200
 
 
 @app.route('/sync-logs')
@@ -100,3 +108,12 @@ def sync_logs():
 
         })
     return render_template('sync_logs.html', logs=logs)
+
+
+@app.route('/sync-org')
+def sync_org():
+    # Get organization info from request parameters
+    org_id = request.args.get('org_id', '')
+    org_name = request.args.get('org_name', '')
+
+    return render_template('sync_org.html', org_id=org_id, org_name=org_name)

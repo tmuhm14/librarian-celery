@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sync Organization - Librarian</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .container {
+            margin-top: 2rem;
+        }
+        .card {
+            margin-bottom: 1.5rem;
+        }
+        .response-area {
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            padding: 1rem;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .sync-button {
+            min-width: 150px;
+        }
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+            <a class="navbar-brand" href="/?apikey=wvMxNEJXK0GQ4Jnz7QhR2KUyg2hyxJAQwtqMuiHGnrCVG2Hs8H5pvHFSEz0Qeq7S">Librarian</a>
+            <div class="navbar-nav">
+                <a class="nav-item nav-link" href="/sync-logs?apikey=wvMxNEJXK0GQ4Jnz7QhR2KUyg2hyxJAQwtqMuiHGnrCVG2Hs8H5pvHFSEz0Qeq7S">Sync Logs</a>
+                <a class="nav-item nav-link active" href="/sync-org?apikey=wvMxNEJXK0GQ4Jnz7QhR2KUyg2hyxJAQwtqMuiHGnrCVG2Hs8H5pvHFSEz0Qeq7S">Sync Organization</a>
+            </div>
+        </nav>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title mb-4">Sync Organization</h2>
+                        <p class="card-text text-muted mb-4">
+                            Use this page to synchronize an organization's contacts between Pipedrive and PhoneBurner.
+                            Enter the organization ID below and click the sync button to start the process.
+                        </p>
+                        
+                        <div class="mb-4">
+                            <label for="orgId" class="form-label">Organization</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="orgId" placeholder="Enter organization ID" value="{{ org_name }}" {% if org_name %}readonly{% endif %}>
+                                <button id="syncButton" class="btn btn-primary sync-button">
+                                    <i class="bi bi-arrow-repeat"></i> Sync Organization
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Sync Response</label>
+                            <div id="responseArea" class="response-area">
+                                Ready to sync...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Instructions</h5>
+                        <p class="card-text">
+                            <ol class="mb-0">
+                                <li>Enter the organization ID in the input field</li>
+                                <li>Click the "Sync Organization" button</li>
+                                <li>Wait for the sync process to complete</li>
+                                <li>Check the response area for results</li>
+                                <li>View detailed logs in the <a href="/sync-logs?apikey=wvMxNEJXK0GQ4Jnz7QhR2KUyg2hyxJAQwtqMuiHGnrCVG2Hs8H5pvHFSEz0Qeq7S">Sync Logs</a> page</li>
+                            </ol>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const responseArea = $('#responseArea');
+            const syncButton = $('#syncButton');
+            const orgIdInput = $('#orgId');
+
+            function appendToResponse(text, isError = false) {
+                const timestamp = new Date().toLocaleTimeString();
+                const message = `[${timestamp}] ${text}\n`;
+                responseArea.append(message);
+                responseArea.scrollTop(responseArea[0].scrollHeight);
+            }
+
+            syncButton.click(function() {
+                const orgId = orgIdInput.val().trim();
+                
+                if (!orgId) {
+                    appendToResponse('Error: Please enter an organization ID', true);
+                    return;
+                }
+
+                // Disable inputs and show loading state
+                syncButton.prop('disabled', true);
+                orgIdInput.prop('disabled', true);
+                $('.card').addClass('loading');
+                
+                appendToResponse(`Starting sync for organization ID: ${orgId}`);
+
+                // Make API call to trigger sync
+                $.ajax({
+                    url: '/api/v1/phoneburner/sync',
+                    method: 'POST',
+                    data: JSON.stringify({
+                        data: {
+                            id: orgId
+                        }
+                    }),
+                    contentType: 'application/json',
+                    success: function(response) {
+                        appendToResponse('Sync process started successfully');
+                        appendToResponse(`Response: ${JSON.stringify(response, null, 2)}`);
+                    },
+                    error: function(xhr) {
+                        const errorMessage = xhr.responseJSON?.error || 'Failed to start sync process';
+                        appendToResponse(`Error: ${errorMessage}`, true);
+                    },
+                    complete: function() {
+                        // Re-enable inputs
+                        syncButton.prop('disabled', false);
+                        orgIdInput.prop('disabled', false);
+                        $('.card').removeClass('loading');
+                    }
+                });
+            });
+
+            // Allow Enter key to trigger sync
+            orgIdInput.keypress(function(e) {
+                if (e.which === 13) {
+                    syncButton.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
