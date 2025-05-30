@@ -7,7 +7,7 @@ from data.repository import create_request_log, update_request_log, get_contact_
 import csv
 from pathlib import Path
 import requests
-
+import base64
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', "super-secret")
@@ -91,7 +91,8 @@ def callback():
     client_secret = '10de0ed24692d47dab9de016c7cd6ffaeb331c65'
     url = f"https://oauth.pipedrive.com/oauth/token"
 
-    headers = {'Authorization': f'Basic {client_id}:{client_secret}'}
+    auth_string = str(base64.b64encode(b'client_id:client_secret'))
+    headers = {'Authorization': f'Basic {auth_string}'}
     data = {
         'grant_type': 'authorization_code',
         'redirect_uri': 'https://app-1oya.onrender.com/api/v1/pipedrive/callback',
