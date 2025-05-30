@@ -25,7 +25,8 @@
             white-space: pre-wrap;
         }
         .sync-button {
-            min-width: 150px;
+            min-width: 200px;
+            font-size: 1.1rem;
         }
         .loading {
             opacity: 0.5;
@@ -50,17 +51,13 @@
                         <h2 class="card-title mb-4">Sync Organization</h2>
                         <p class="card-text text-muted mb-4">
                             Use this page to synchronize an organization's contacts between Pipedrive and PhoneBurner.
-                            Enter the organization ID below and click the sync button to start the process.
+                            Click the sync button below to start the process.
                         </p>
                         
-                        <div class="mb-4">
-                            <label for="orgId" class="form-label">Organization</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="orgId" placeholder="Enter organization ID" value="{{ org_name }}" {% if org_name %}readonly{% endif %}>
-                                <button id="syncButton" class="btn btn-primary sync-button">
-                                    <i class="bi bi-arrow-repeat"></i> Sync Organization
-                                </button>
-                            </div>
+                        <div class="mb-4 text-center">
+                            <button id="syncButton" class="btn btn-primary sync-button">
+                                <i class="bi bi-arrow-repeat"></i> Sync Organization
+                            </button>
                         </div>
 
                         <div class="mb-3">
@@ -79,7 +76,6 @@
                         <h5 class="card-title">Instructions</h5>
                         <p class="card-text">
                             <ol class="mb-0">
-                                <li>Enter the organization ID in the input field</li>
                                 <li>Click the "Sync Organization" button</li>
                                 <li>Wait for the sync process to complete</li>
                                 <li>Check the response area for results</li>
@@ -98,7 +94,6 @@
         $(document).ready(function() {
             const responseArea = $('#responseArea');
             const syncButton = $('#syncButton');
-            const orgIdInput = $('#orgId');
 
             function appendToResponse(text, isError = false) {
                 const timestamp = new Date().toLocaleTimeString();
@@ -108,19 +103,11 @@
             }
 
             syncButton.click(function() {
-                const orgId = orgIdInput.val().trim();
-                
-                if (!orgId) {
-                    appendToResponse('Error: Please enter an organization ID', true);
-                    return;
-                }
-
-                // Disable inputs and show loading state
+                // Disable button and show loading state
                 syncButton.prop('disabled', true);
-                orgIdInput.prop('disabled', true);
                 $('.card').addClass('loading');
                 
-                appendToResponse(`Starting sync for organization ID: ${orgId}`);
+                appendToResponse('Starting sync process...');
 
                 // Make API call to trigger sync
                 $.ajax({
@@ -128,7 +115,7 @@
                     method: 'POST',
                     data: JSON.stringify({
                         data: {
-                            id: orgId
+                            id: "{{ org_id }}"
                         }
                     }),
                     contentType: 'application/json',
@@ -141,19 +128,11 @@
                         appendToResponse(`Error: ${errorMessage}`, true);
                     },
                     complete: function() {
-                        // Re-enable inputs
+                        // Re-enable button
                         syncButton.prop('disabled', false);
-                        orgIdInput.prop('disabled', false);
                         $('.card').removeClass('loading');
                     }
                 });
-            });
-
-            // Allow Enter key to trigger sync
-            orgIdInput.keypress(function(e) {
-                if (e.which === 13) {
-                    syncButton.click();
-                }
             });
         });
     </script>
