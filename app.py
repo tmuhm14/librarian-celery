@@ -6,6 +6,7 @@ from datetime import datetime
 from data.repository import create_request_log, update_request_log, get_contact_sync_log
 import csv
 from pathlib import Path
+import requests
 
 
 app = Flask(__name__)
@@ -80,7 +81,22 @@ def add_inputs():
 
 @app.route('/api/v1/pipedrive/callback', methods=['GET'])
 def callback():
-    print(f'[DEBUG] Callback: {request.json}')
+    auth_code = request.args.get('code')
+    if not auth_code:
+        return jsonify({'error': 'Missing auth code'}), 400
+
+    client_id = os.getenv('PIPEDRIVE_CLIENT_ID') or 'f767bda5e600a23c'
+    client_secret = os.getenv(
+        'PIPEDRIVE_CLIENT_SECRET') or '10de0ed24692d47dab9de016c7cd6ffaeb331c65'
+    url = f"https://oauth.pipedrive.com/oauth/token"
+    headers = {'Authorization': f'Basic {client_id}:{client_secret}'}
+    data = {
+        'grant_type': 'authorization_code',
+        'redirect_uri': 'https://app-1oya.onrender.com/api/v1/pipedrive/callback',
+        'code': auth_code
+    }
+    response = requests.post(url, headers=headers, data=data)
+    print(f'[DEBUG] Callback: {response.json()}')
     return jsonify({'message': 'Callback received'}), 200
 
 
