@@ -81,9 +81,9 @@ def add_inputs():
 
 @app.route('/api/v1/pipedrive/callback', methods=['GET'])
 def callback():
-    print(f'[DEBUG] Callback: {request.args}')
+    print(f'[DEBUG] Callback args: {request.args}')
     auth_code = request.args.get('code')
-    print(f'[DEBUG] Callback: {auth_code}')
+    print(f'[DEBUG] Callback auth_code: {auth_code}')
     if not auth_code:
         return jsonify({'error': 'Missing auth code'}), 400
 
