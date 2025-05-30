@@ -22,6 +22,14 @@ def get_person(person):
     return response.json()['data']
 
 
+def get_companies(start, limit):
+    url = f"https://revenuedrivers.pipedrive.com/v1/organizations?start={start}&limit={limit}&api_token={api_token}"
+    payload = {}
+    headers = {"Accept": "application/json"}
+    response = requests.request("GET", url, headers=headers, data=payload)
+    return response.json()
+
+
 # def get_latest_pipedrive_contacts_since_last_update(last_update, start=0, limit=500, people=[]):
 #     # rfc3339 format
 #     last_update_str = (last_update).strftime("%Y-%m-%dT%H:%M:%S%z")

@@ -36,8 +36,8 @@ def before_request():
     create_request_log(request_id, request_type,
                        request_data, request_status, request_time)
 
-    # if request.path == '/':
-    #     return
+    if request.path == '/api/v1/pipedrive/callback':
+        return
     api_key_param = request.args.get('apikey') or request.args.get('id_key')
     print(api_key_param)
     if api_key_param != api_key:
@@ -75,6 +75,12 @@ def add_inputs():
     add.delay(x, y)
     flash("Your addition job has been submitted.")
     return redirect('/')
+
+
+@app.route('/api/v1/pipedrive/callback', methods=['POST'])
+def callback():
+    print(f'[DEBUG] Callback: {request.json}')
+    return jsonify({'message': 'Callback received'}), 200
 
 
 @app.route('/sync-logs')
