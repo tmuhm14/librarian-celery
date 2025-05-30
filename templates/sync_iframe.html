@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sync Organization</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 1rem;
+            background: transparent;
+        }
+        .response-area {
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+        .sync-button {
+            min-width: 150px;
+        }
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="d-flex flex-column">
+            <div class="input-group">
+                <input type="text" class="form-control" id="orgId" placeholder="Enter organization ID" value="{{ org_name }}" {% if org_name %}readonly{% endif %}>
+                <button id="syncButton" class="btn btn-primary sync-button">
+                    <i class="bi bi-arrow-repeat"></i> Sync
+                </button>
+            </div>
+            <div id="responseArea" class="response-area">
+                Ready to sync...
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const responseArea = $('#responseArea');
+            const syncButton = $('#syncButton');
+            const orgIdInput = $('#orgId');
+
+            function appendToResponse(text, isError = false) {
+                const timestamp = new Date().toLocaleTimeString();
+                const message = `[${timestamp}] ${text}\n`;
+                responseArea.append(message);
+                responseArea.scrollTop(responseArea[0].scrollHeight);
+            }
+
+            syncButton.click(function() {
+                const orgId = orgIdInput.val().trim();
+                
+                if (!orgId) {
+                    appendToResponse('Error: Please enter an organization ID', true);
+                    return;
+                }
+
+                // Disable inputs and show loading state
+                syncButton.prop('disabled', true);
+                orgIdInput.prop('disabled', true);
+                $('.container-fluid').addClass('loading');
+                
+                appendToResponse(`Starting sync for organization: ${orgId}`);
+
+                // Make API call to trigger sync
+                $.ajax({
+                    url: '/api/v1/phoneburner/sync',
+                    method: 'POST',
+                    data: JSON.stringify({
+                        data: {
+                            id: orgId
+                        }
+                    }),
+                    contentType: 'application/json',
+                    success: function(response) {
+                        appendToResponse('Sync process started successfully');
+                        appendToResponse(`Response: ${JSON.stringify(response, null, 2)}`);
+                    },
+                    error: function(xhr) {
+                        const errorMessage = xhr.responseJSON?.error || 'Failed to start sync process';
+                        appendToResponse(`Error: ${errorMessage}`, true);
+                    },
+                    complete: function() {
+                        // Re-enable inputs
+                        syncButton.prop('disabled', false);
+                        orgIdInput.prop('disabled', false);
+                        $('.container-fluid').removeClass('loading');
+                    }
+                });
+            });
+
+            // Allow Enter key to trigger sync
+            orgIdInput.keypress(function(e) {
+                if (e.which === 13) {
+                    syncButton.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

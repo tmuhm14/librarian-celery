@@ -112,12 +112,11 @@ def callback():
 @app.route('/api/v1/pipedrive/sync/companies', methods=['GET'])
 def sync_companies():
     print(f'[DEBUG] request: {request}')
-    headers = request.headers
-    print(f'[DEBUG] headers: {headers}')
-    access_token = headers.get('Authorization')
-    print(f'[DEBUG] access_token: {access_token}')
-    refresh_token = headers.get('Refresh-Token')
-    print(f'[DEBUG] refresh_token: {refresh_token}')
+    # get auth token from headers
+    auth_token = request.headers.get('Authorization')
+    print(f'[DEBUG] auth_token: {auth_token}')
+
+    # get access token from auth token
 
     print('Syncing companies')
     return jsonify({'message': 'Syncing companies'}), 200
@@ -148,4 +147,13 @@ def sync_org():
     org_id = request.args.get('org_id', '')
     org_name = request.args.get('org_name', '')
 
-    return render_template('sync_org.html', org_id=org_id, org_name=org_name)
+    return render_template('sync_org.html', org_id="test", org_name="org_name")
+
+
+@app.route('/sync-iframe')
+def sync_iframe():
+    # Get organization info from request parameters
+    org_id = request.args.get('org_id', '')
+    org_name = request.args.get('org_name', '')
+
+    return render_template('sync_iframe.html', org_id=org_id, org_name=org_name)
