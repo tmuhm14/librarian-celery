@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sync Organization - Librarian</title>
+    <title>Sync {{ resource|title }} - Librarian</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -32,6 +32,23 @@
             opacity: 0.5;
             pointer-events: none;
         }
+        .progress {
+            height: 25px;
+        }
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        .status-badge {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+        .sync-stats {
+            display: none;
+            margin-top: 1rem;
+        }
+        .sync-stats.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -40,7 +57,7 @@
             <a class="navbar-brand" href="/?apikey=wvMxNEJXK0GQ4Jnz7QhR2KUyg2hyxJAQwtqMuiHGnrCVG2Hs8H5pvHFSEz0Qeq7S">Librarian</a>
             <div class="navbar-nav">
                 <a class="nav-item nav-link" href="/sync-logs?apikey=wvMxNEJXK0GQ4Jnz7QhR2KUyg2hyxJAQwtqMuiHGnrCVG2Hs8H5pvHFSEz0Qeq7S">Sync Logs</a>
-                <a class="nav-item nav-link active" href="/sync-org?apikey=wvMxNEJXK0GQ4Jnz7QhR2KUyg2hyxJAQwtqMuiHGnrCVG2Hs8H5pvHFSEz0Qeq7S">Sync Organization</a>
+                <a class="nav-item nav-link active" href="/sync-org?apikey=wvMxNEJXK0GQ4Jnz7QhR2KUyg2hyxJAQwtqMuiHGnrCVG2Hs8H5pvHFSEz0Qeq7S">Sync {{ resource|title }}</a>
             </div>
         </nav>
 
@@ -48,16 +65,65 @@
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-body">
-                        <h2 class="card-title mb-4">Sync Organization</h2>
+                        <h2 class="card-title mb-4">Sync {{ resource|title }}</h2>
                         <p class="card-text text-muted mb-4">
-                            Use this page to synchronize an organization's contacts between Pipedrive and PhoneBurner.
+                            Use this page to synchronize {{ resource }} contacts between Pipedrive and PhoneBurner.
                             Click the sync button below to start the process.
                         </p>
                         
                         <div class="mb-4 text-center">
                             <button id="syncButton" class="btn btn-primary sync-button">
-                                <i class="bi bi-arrow-repeat"></i> Sync Organization
+                                <i class="bi bi-arrow-repeat"></i> Sync {{ resource|title }}
                             </button>
+                        </div>
+
+                        <div id="syncProgress" class="mb-4" style="display: none;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span id="syncStatus" class="badge bg-primary status-badge">Initializing...</span>
+                                <span id="syncPercentage" class="text-muted">0%</span>
+                            </div>
+                            <div class="progress">
+                                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     role="progressbar" style="width: 0%" 
+                                     aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+
+                        <div id="syncStats" class="sync-stats">
+                            <div class="row text-center">
+                                <div class="col">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Total</h5>
+                                            <p id="totalCount" class="card-text h3">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Created</h5>
+                                            <p id="createdCount" class="card-text h3 text-success">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Updated</h5>
+                                            <p id="updatedCount" class="card-text h3 text-primary">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Failed</h5>
+                                            <p id="failedCount" class="card-text h3 text-danger">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="mb-3">
@@ -76,7 +142,7 @@
                         <h5 class="card-title">Instructions</h5>
                         <p class="card-text">
                             <ol class="mb-0">
-                                <li>Click the "Sync Organization" button</li>
+                                <li>Click the "Sync {{ resource|title }}" button</li>
                                 <li>Wait for the sync process to complete</li>
                                 <li>Check the response area for results</li>
                                 <li>View detailed logs in the <a href="/sync-logs?apikey=wvMxNEJXK0GQ4Jnz7QhR2KUyg2hyxJAQwtqMuiHGnrCVG2Hs8H5pvHFSEz0Qeq7S">Sync Logs</a> page</li>
@@ -94,6 +160,38 @@
         $(document).ready(function() {
             const responseArea = $('#responseArea');
             const syncButton = $('#syncButton');
+            const syncProgress = $('#syncProgress');
+            const progressBar = $('#progressBar');
+            const syncStatus = $('#syncStatus');
+            const syncPercentage = $('#syncPercentage');
+            const syncStats = $('#syncStats');
+            let syncInterval = null;
+
+            function updateProgress(progress) {
+                const percentage = Math.round(progress * 100);
+                progressBar.css('width', `${percentage}%`);
+                progressBar.attr('aria-valuenow', percentage);
+                syncPercentage.text(`${percentage}%`);
+            }
+
+            function updateStats(stats) {
+                $('#totalCount').text(stats.total || 0);
+                $('#createdCount').text(stats.created || 0);
+                $('#updatedCount').text(stats.updated || 0);
+                $('#failedCount').text(stats.failed || 0);
+            }
+
+            function updateStatus(status, isError = false) {
+                syncStatus.text(status);
+                syncStatus.removeClass('bg-primary bg-success bg-danger');
+                if (isError) {
+                    syncStatus.addClass('bg-danger');
+                } else if (status === 'Completed') {
+                    syncStatus.addClass('bg-success');
+                } else {
+                    syncStatus.addClass('bg-primary');
+                }
+            }
 
             function appendToResponse(text, isError = false) {
                 const timestamp = new Date().toLocaleTimeString();
@@ -102,30 +200,73 @@
                 responseArea.scrollTop(responseArea[0].scrollHeight);
             }
 
+            function checkSyncStatus() {
+                $.ajax({
+                    url: '/api/v1/phoneburner/sync/status',
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.status === 'completed') {
+                            clearInterval(syncInterval);
+                            updateStatus('Completed');
+                            updateProgress(1);
+                            updateStats(response.stats);
+                            syncStats.addClass('show');
+                            appendToResponse('Sync completed successfully');
+                        } else if (response.status === 'failed') {
+                            clearInterval(syncInterval);
+                            updateStatus('Failed', true);
+                            appendToResponse(`Sync failed: ${response.error}`, true);
+                        } else {
+                            updateProgress(response.progress);
+                            updateStatus(response.status);
+                            updateStats(response.stats);
+                            syncStats.addClass('show');
+                        }
+                    },
+                    error: function(xhr) {
+                        clearInterval(syncInterval);
+                        updateStatus('Error', true);
+                        const errorMessage = xhr.responseJSON?.error || 'Failed to check sync status';
+                        appendToResponse(`Error: ${errorMessage}`, true);
+                    }
+                });
+            }
+
             syncButton.click(function() {
+                // Reset UI
+                syncProgress.show();
+                syncStats.removeClass('show');
+                updateProgress(0);
+                updateStatus('Initializing...');
+                updateStats({ total: 0, created: 0, updated: 0, failed: 0 });
+                responseArea.html('Starting sync process...\n');
+
                 // Disable button and show loading state
                 syncButton.prop('disabled', true);
                 $('.card').addClass('loading');
-                
-                appendToResponse('Starting sync process...');
 
-                // Make API call to trigger sync
+                // Start sync process
                 $.ajax({
                     url: '/api/v1/phoneburner/sync',
                     method: 'POST',
                     data: JSON.stringify({
                         data: {
-                            id: "{{ org_id }}"
+                            id: "{{ org_id }}",
+                            resource: "{{ resource }}"
                         }
                     }),
                     contentType: 'application/json',
                     success: function(response) {
                         appendToResponse('Sync process started successfully');
                         appendToResponse(`Response: ${JSON.stringify(response, null, 2)}`);
+                        
+                        // Start polling for status
+                        syncInterval = setInterval(checkSyncStatus, 2000);
                     },
                     error: function(xhr) {
                         const errorMessage = xhr.responseJSON?.error || 'Failed to start sync process';
                         appendToResponse(`Error: ${errorMessage}`, true);
+                        updateStatus('Failed', true);
                     },
                     complete: function() {
                         // Re-enable button

@@ -255,3 +255,21 @@ def sync_org():
     org_name = request.args.get('org_name', '')
 
     return render_template('sync_org.html', org_id="test", org_name="org_name")
+
+
+@app.route('/api/v1/phoneburner/sync/status', methods=['GET'])
+def sync_status():
+    # Get the current sync status from the database or cache
+    # This is a placeholder - you'll need to implement the actual status tracking
+    status = {
+        'status': 'in_progress',  # or 'completed', 'failed'
+        'progress': 0.5,  # 0 to 1
+        'stats': {
+            'total': 100,
+            'created': 30,
+            'updated': 20,
+            'failed': 0
+        }
+    }
+
+    return jsonify(status)
