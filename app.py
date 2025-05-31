@@ -125,13 +125,9 @@ def sync_companies():
 @app.route('/api/v1/pipedrive/sync/json', methods=['GET'])
 def sync_json():
     # basic auth
+    print(f'[DEBUG] request: {request}')
     auth_token = request.headers.get('Authorization')
     print(f'[DEBUG] auth_token: {auth_token}')
-    if not auth_token:
-        return jsonify({'error': 'Missing auth token'}), 401
-    if auth_token != 'Basic ' + base64.b64encode(
-            (f'test:test').encode('utf-8')).decode():
-        return jsonify({'error': 'Invalid auth token'}), 401
 
     return jsonify({
         "data": [
