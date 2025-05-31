@@ -38,7 +38,7 @@ def before_request():
     create_request_log(request_id, request_type,
                        request_data, request_status, request_time)
 
-    if request.path == '/api/v1/pipedrive/callback' or request.path == '/api/v1/pipedrive/sync/companies':
+    if request.path == '/api/v1/pipedrive/callback' or request.path == '/api/v1/pipedrive/sync/companies' or request.path == '/api/v1/pipedrive/sync/json':
         return
     api_key_param = request.args.get('apikey') or request.args.get('id_key')
     print(api_key_param)
