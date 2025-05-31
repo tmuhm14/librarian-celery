@@ -122,6 +122,117 @@ def sync_companies():
     return jsonify({'message': 'Syncing companies'}), 200
 
 
+@app.route('/api/v1/pipedrive/sync/json', methods=['GET'])
+def sync_json():
+    # basic auth
+    auth_token = request.headers.get('Authorization')
+    print(f'[DEBUG] auth_token: {auth_token}')
+    if not auth_token:
+        return jsonify({'error': 'Missing auth token'}), 401
+    if auth_token != 'Basic ' + base64.b64encode(
+            (f'test:test').encode('utf-8')).decode():
+        return jsonify({'error': 'Invalid auth token'}), 401
+
+    return jsonify({
+        "data": [
+            {
+                "id": 1,
+                "header": "GTA 22 Blue Auto",
+                "project": "New cars",
+                "manufacturer": "Molksvagen LLC",
+                "delivery_date": "2021-08-31T07:00:00.000Z",
+                "status": {
+                    "color": "yellow",
+                    "label": "ASSEMBLING"
+                },
+                "delivery_company": "Jungle Prime",
+                "tracking": {
+                    "markdown": True,
+                    "value": "[Open tracking link](https://pipedrive.com)"
+                },
+                "note": {
+                    "markdown": True,
+                    "value": "Meeting next week to sign the [insurance contract](https://pipedrive.com)."
+                },
+                "extras": [
+                    "Cruise control",
+                    "Rain detector",
+                    "Lane assist"
+                ],
+                "delivery_cost": {
+                    "code": "USD",
+                    "value": 2000
+                }
+            },
+            {
+                "id": 2,
+                "header": "BNW X500",
+                "project": "New cars",
+                "manufacturer": "Molksvagen LLC",
+                "delivery_date": "2021-08-31T07:00:00.000Z",
+                "status": {
+                    "color": "red",
+                    "label": "DELAYED"
+                },
+                "delivery_company": "Jungle Prime",
+                "tracking": {
+                    "markdown": True,
+                    "value": "[Open tracking link](https://pipedrive.com)"
+                },
+                "note": {
+                    "markdown": True,
+                    "value": "Meeting next week to sign the [insurance contract](https://pipedrive.com)."
+                },
+                "extras": [
+                    "Cruise control",
+                    "Rain detector",
+                    "Lane assist"
+                ],
+                "delivery_cost": {
+                    "code": "USD",
+                    "value": 2000
+                }
+            },
+            {
+                "id": 3,
+                "header": "Dorsche 911",
+                "project": "New cars",
+                "manufacturer": "Molksvagen LLC",
+                "delivery_date": "2021-08-31T07:00:00.000Z",
+                "status": {
+                    "color": "green",
+                    "label": "EN ROUTE"
+                },
+                "delivery_company": "Jungle Prime",
+                "tracking": {
+                    "markdown": True,
+                    "value": "[Open tracking link](https://pipedrive.com)"
+                },
+                "note": {
+                    "markdown": True,
+                    "value": "Meeting next week to sign the [insurance contract](https://pipedrive.com)."
+                },
+                "extras": [
+                    "Cruise control",
+                    "Rain detector",
+                    "Lane assist"
+                ],
+                "delivery_cost": {
+                    "code": "USD",
+                    "value": 2000
+                }
+            }
+        ],
+        "external_link": {
+            "url": "https://pipedrive.com",
+            "label": "Account settings"
+        },
+        "settings": {
+            "url": "https://pipedrive.com"
+        }
+    }), 200
+
+
 @app.route('/sync-logs')
 def sync_logs():
     sync_logs = get_contact_sync_log()

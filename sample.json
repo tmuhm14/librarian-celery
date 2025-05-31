@@ -1,62 +1,45 @@
 {
-  "data": {
-    "add_time": "2025-05-17T02:56:24Z",
-    "custom_fields": {
-      "birthday": "",
-      "postal_address": "",
-      "notes": "",
-      "im": { "values": [], "type": "contact_info" },
-      "dafb6c25356831f20d19e81c1cd7a7112d3f5dfd": {
-        "type": "varchar",
-        "value": "RiseNow"
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["id", "header"],
+    "properties": {
+      "id": {
+        "$ref": "#/definitions/numerical"
       },
-      "e70469ee79a29fdbfb41156db861a30375998171": "",
-      "8cf2e45a7af680f04b4e45ee4a9dfc89c5307544": "",
-      "a6efb97bd7aba28a60956139b1a10dcac9ca656f": "",
-      "4ff3f562ed5721812292184ffb37f4a39fb88cc5": "",
-      "771702042524dcf97c2d4eb3ba8488e1b3db6978": "",
-      "3d4a2005e3faf0b4f698f0ba7591e7e5c9528801": "",
-      "4a67abb3e361cde03b50511b1171cdabc1ce54a3": { "id": 288, "type": "enum" },
-      "be0137322e663cdca1a5ff7706c73d8e368b839c": "",
-      "795c74fcbe59c8cb0972126a2d758b460addece6": "",
-      "8b934eeff04dd707c8a0ac08c1af95646d71111e": "",
-      "f02fa455ab3b42fa7caf5f439f154c44ec0785cc": "",
-      "job_title": "",
-      "e92f3b7d08e6fbb0e7386df5cd23790239ee8f3f": ""
-    },
-    "emails": [
-      { "label": "work", "value": "tonymuhm1@gmail.com", "primary": "True" },
-      { "label": "home", "value": "tony.turner@gmial.com", "primary": "False" }
-    ],
-    "first_name": "Tony",
-    "id": 46409,
-    "label": "",
-    "label_ids": [],
-    "last_name": "Turner",
-    "name": "Tony Turner",
-    "org_id": 14165,
-    "owner_id": 11637399,
-    "phones": [{ "label": "work", "value": "570-809-7197", "primary": "True" }],
-    "update_time": "2025-05-17T02:56:24Z",
-    "visible_to": "3"
-  },
-  "previous": "",
-  "meta": {
-    "action": "create",
-    "company_id": "7632519",
-    "correlation_id": "d31142c8-a656-4cb1-9d6a-aad7413c4458",
-    "entity_id": "46409",
-    "entity": "person",
-    "id": "c94cdeba-3984-4984-b205-f32696e4a0ea",
-    "is_bulk_edit": "False",
-    "timestamp": "2025-05-17T02:56:24.631Z",
-    "type": "general",
-    "user_id": "11637399",
-    "version": "2.0",
-    "webhook_id": "1834932",
-    "webhook_owner_id": "11637399",
-    "change_source": "app",
-    "attempt": 1,
-    "host": "plantprodigitalcom.pipedrive.com"
+      "header": {
+        "$ref": "#/definitions/header"
+      },
+      "project": {
+        "$ref": "#/definitions/text"
+      },
+      "manufacturer": {
+        "$ref": "#/definitions/text"
+      },
+      "delivery_date": {
+        "$ref": "#/definitions/date-time",
+        "label": "Delivery date"
+      },
+      "status": {
+        "$ref": "#/definitions/label"
+      },
+      "delivery_company": {
+        "$ref": "#/definitions/text",
+        "label": "Delivery company"
+      },
+      "tracking": {
+        "$ref": "#/definitions/text"
+      },
+      "note": {
+        "$ref": "#/definitions/text"
+      },
+      "extras": {
+        "$ref": "#/definitions/tags"
+      },
+      "delivery_cost": {
+        "$ref": "#/definitions/currency",
+        "label": "Delivery cost"
+      }
+    }
   }
 }
