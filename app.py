@@ -253,8 +253,14 @@ def sync_org():
     # Get organization info from request parameters
     org_id = request.args.get('org_id', '')
     org_name = request.args.get('org_name', '')
-
-    return render_template('sync_org.html', org_id="test", org_name="org_name")
+    resource = request.args.get('resource', '')
+    view = request.args.get('view', '')
+    user_id = request.args.get('userId', '')
+    company_id = request.args.get('companyId', '')
+    selected_ids = request.args.get('selectedIds', '')
+    id = request.args.get('id', '')
+    token = request.args.get('token', '')
+    return render_template('sync_org.html', resource=resource, org_id="test", org_name="org_name", user_id=user_id, company_id=company_id, selected_ids=selected_ids, id=id, token=token)
 
 
 @app.route('/api/v1/phoneburner/sync/status', methods=['GET'])

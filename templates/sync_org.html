@@ -49,6 +49,19 @@
         .sync-stats.show {
             display: block;
         }
+        .id-badge {
+            font-family: monospace;
+            background-color: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid #dee2e6;
+            margin-bottom: 1rem;
+        }
+        .id-label {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
     </style>
 </head>
 <body>
@@ -66,6 +79,21 @@
                 <div class="card">
                     <div class="card-body">
                         <h2 class="card-title mb-4">Sync {{ resource|title }}</h2>
+                        
+                        {% if user_id %}
+                        <div class="id-badge">
+                            <div class="id-label">User ID</div>
+                            <div>{{ user_id }}</div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if company_id %}
+                        <div class="id-badge">
+                            <div class="id-label">Organization ID</div>
+                            <div>{{ company_id }}</div>
+                        </div>
+                        {% endif %}
+
                         <p class="card-text text-muted mb-4">
                             Use this page to synchronize {{ resource }} contacts between Pipedrive and PhoneBurner.
                             Click the sync button below to start the process.
@@ -252,7 +280,9 @@
                     data: JSON.stringify({
                         data: {
                             id: "{{ org_id }}",
-                            resource: "{{ resource }}"
+                            resource: "{{ resource }}",
+                            user_id: "{{ user_id }}",
+                            company_id: "{{ company_id }}"
                         }
                     }),
                     contentType: 'application/json',
