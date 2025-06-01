@@ -22,6 +22,8 @@ def get_person(person):
     return response.json()['data']
 
 
+<<<<<<< HEAD
+=======
 def get_companies(start, limit):
     url = f"https://revenuedrivers.pipedrive.com/v1/organizations?start={start}&limit={limit}&api_token={api_token}"
     payload = {}
@@ -53,6 +55,7 @@ def get_companies(start, limit):
 #     return people
 
 
+>>>>>>> parent of 64c75e7 (DEV)
 def get_contacts_data(last_update, start, limit):
     url = f"https://revenuedrivers.pipedrive.com/v1/persons?start={start}&limit={limit}&api_token={api_token}"
     payload = {}

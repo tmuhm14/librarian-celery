@@ -1,6 +1,7 @@
 import os
 from flask import Flask, flash, render_template, redirect, request, jsonify
 from tasks import add, sync_to_phoneburner
+from services.pipedrive_svc import get_person, get_company
 import uuid
 from datetime import datetime
 from data.repository import create_request_log, update_request_log, get_contact_sync_log
@@ -260,7 +261,19 @@ def sync_org():
     selected_ids = request.args.get('selectedIds', '')
     id = request.args.get('id', '')
     token = request.args.get('token', '')
+<<<<<<< HEAD
+    name = None
+    if resource == 'person':
+        person = get_person(id)
+        name = person['data']['name']
+    else:
+        company = get_company(id)
+        name = company['data']['name']
+
+    return render_template('sync_org.html', resource=resource, org_id="test", org_name=name, user_id=user_id, company_id=company_id, selected_ids=selected_ids, id=id, token=token)
+=======
     return render_template('sync_org.html', resource=resource, org_id="test", org_name="org_name", user_id=user_id, company_id=company_id, selected_ids=selected_ids, id=id, token=token)
+>>>>>>> parent of 64c75e7 (DEV)
 
 
 @app.route('/api/v1/phoneburner/sync/status', methods=['GET'])
