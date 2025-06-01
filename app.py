@@ -262,12 +262,12 @@ def sync_org():
     id = request.args.get('id', '')
     token = request.args.get('token', '')
     name = None
-    if resource == 'person':
-        person = get_person(id)
-        name = person['data']['name']
-    else:
-        company = get_company(id)
-        name = company['data']['name']
+    # if resource == 'person':
+    #     person = get_person(id)
+    #     name = person['data']['name']
+    # else:
+    #     company = get_company(id)
+    #     name = company['data']['name']
 
     return render_template('sync_org.html', resource=resource, org_id="test", org_name=name, user_id=user_id, company_id=company_id, selected_ids=selected_ids, id=id, token=token)
 
