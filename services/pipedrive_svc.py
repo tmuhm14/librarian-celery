@@ -22,40 +22,6 @@ def get_person(person):
     return response.json()['data']
 
 
-<<<<<<< HEAD
-=======
-def get_companies(start, limit):
-    url = f"https://revenuedrivers.pipedrive.com/v1/organizations?start={start}&limit={limit}&api_token={api_token}"
-    payload = {}
-    headers = {"Accept": "application/json"}
-    response = requests.request("GET", url, headers=headers, data=payload)
-    return response.json()
-
-
-# def get_latest_pipedrive_contacts_since_last_update(last_update, start=0, limit=500, people=[]):
-#     # rfc3339 format
-#     last_update_str = (last_update).strftime("%Y-%m-%dT%H:%M:%S%z")
-
-#     contacts_list = []
-
-#     url = f"https://revenuedrivers.pipedrive.com/v1/persons?updated_since={last_update_str}&api_token={api_token}"
-#     print(f"[DEBUG] URL: {url}")
-#     payload = {}
-#     headers = {"Accept": "application/json"}
-#     response = requests.request("GET", url, headers=headers, data=payload)
-#     result = response.json()
-
-#     if result["data"]:
-#         people.extend(result["data"])
-
-#     if result["additional_data"]["pagination"]["more_items_in_collection"]:
-#         people.extend(get_latest_pipedrive_contacts_since_last_update(
-#             last_update, result["additional_data"]["pagination"]["next_start"], limit, people))
-
-#     return people
-
-
->>>>>>> parent of 64c75e7 (DEV)
 def get_contacts_data(last_update, start, limit):
     url = f"https://revenuedrivers.pipedrive.com/v1/persons?start={start}&limit={limit}&api_token={api_token}"
     payload = {}
