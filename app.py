@@ -272,6 +272,14 @@ def sync_org():
     return render_template('sync_org.html', resource=resource, org_id="test", org_name=name, user_id=user_id, company_id=company_id, selected_ids=selected_ids, id=id, token=token)
 
 
+@app.route('/api/v1/phoneburner/sync/log/data', methods=['GET'])
+def sync_log_data():
+    request_data = request.json
+    print(f'[DEBUG] request_data: {request_data}')
+    sync_logs = get_contact_sync_log()
+    return jsonify(sync_logs), 200
+
+
 @app.route('/api/v1/phoneburner/sync/status', methods=['GET'])
 def sync_status():
     # Get the current sync status from the database or cache
