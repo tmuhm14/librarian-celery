@@ -274,10 +274,21 @@ def sync_org():
 
 @app.route('/api/v1/phoneburner/sync/log/data', methods=['GET'])
 def sync_log_data():
-    request_data = request.json
-    print(f'[DEBUG] request_data: {request_data}')
     sync_logs = get_contact_sync_log()
-    return jsonify(sync_logs), 200
+
+    data = []
+    for log in sync_logs:
+        data.append({
+            "time": log.sync_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "type": log.sync_type,
+            "contact_id": log.contact_id,
+            "pipedrive_id": log.pipedrive_id,
+            "phoneburner_id": log.phoneburner_id,
+            "name": log.first_name + " " + log.last_name,
+            "company": log.folder_name,
+
+        })
+    return jsonify(data), 200
 
 
 @app.route('/api/v1/phoneburner/sync/status', methods=['GET'])
